@@ -99,12 +99,12 @@ def run(target, start=0, iteration=10, batch_size=256, epochs=500, out='./model'
     # submit
     submit = pd.read_csv('xy_mlp_ensemble10_2nd.csv')
     if target == 0:
-        submit.iloc[:1] = x_pred
-        submit.iloc[:2] = y_pred
+        submit.iloc[:, 1] = x_pred
+        submit.iloc[:, 2] = y_pred
     if target == 1 or target == 3:
-        submit.iloc[:3] = m_pred
+        submit.iloc[:, 3] = m_pred
     if target == 2 or target == 3:
-        submit.iloc[:4] = v_pred
+        submit.iloc[:, 4] = v_pred
     submit.to_csv(os.path.join(out, 'mv_ensemble10.csv'), index=None)
 
 
