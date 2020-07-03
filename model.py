@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import functools
 '''
@@ -214,8 +215,8 @@ def build_resnet(input, input_shape=(375,5,1), n_feature_maps=8, n=5):
     return out
 
 
-def load_best_model(train_target, is_train=False, label=None, seq=0, root='.'):
-    model_path = os.path.join(root, f'best_{label}_{seq}.hdf5')
+def load_best_model(train_target, is_train=False, label=None, seq=0, out='.'):
+    model_path = os.path.join(out, f'best_{label}_{seq}.hdf5')
     print(f'Loading {model_path}..')
 
     if train_target == 0:

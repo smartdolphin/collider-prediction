@@ -22,7 +22,7 @@ import tensorflow as tf
 import pandas as pd
 
 from data_loader import get_data
-from model import set_model
+from model import set_model, load_best_model
 from util import *
 
 
@@ -41,12 +41,12 @@ def train(model, X,Y, epochs=200, batch_size=256, label=None, seq=0, out='./mode
                       patience=10, min_lr=0.0001) 
 
     history = model.fit(X, Y,
-                  epochs=epochs,
-                  batch_size=batch_size,
-                  shuffle=True,
-                  validation_split=0.2,
-                  verbose = 2,
-                  callbacks=[best_save, reduce_lr])
+                        epochs=epochs,
+                        batch_size=batch_size,
+                        shuffle=True,
+                        validation_split=0.2,
+                        verbose = 2,
+                        callbacks=[best_save, reduce_lr])
 
     fig, loss_ax = plt.subplots()
     acc_ax = loss_ax.twinx()
@@ -64,7 +64,7 @@ def train(model, X,Y, epochs=200, batch_size=256, label=None, seq=0, out='./mode
     return history 
 
 
-def run(target, iteration=10, batch_size=256, epochs=500, out='./model'):
+def run(target, start=0, iteration=10, batch_size=256, epochs=500, out='./model'):
     x_train, y_train, x_test = get_data(target=target)
     print(f'Kind of Data: {len(x_train)}')
     
@@ -76,9 +76,9 @@ def run(target, iteration=10, batch_size=256, epochs=500, out='./model'):
                      epochs=epochs,
                      batch_size=batch_size,
                      label=LABEL[target],
-                     seq=i,
+                     seq=start+i,
                      out=out)
-        best_model = load_best_model(target, label=LABEL[target], seq=i)
+        best_model = load_best_model(target, label=LABEL[target], seq=start+i, out=out)
         pred_data_test = best_model.predict(x_test)
         if target == 0:
             x_pred_list.append(pred_data_test[:,0])
@@ -111,6 +111,7 @@ def run(target, iteration=10, batch_size=256, epochs=500, out='./model'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", "-g",  default=0, type=int, help="gpu num(default 0)")
+    parser.add_argument("--start", default=0, type=int, help="start iter num(default 0)")
     parser.add_argument("--iter", "-i",  default=10, type=int, help="iteration num(default 10)")
     parser.add_argument("--epochs", "-e",  default=500, type=int, help="epochs(default 500)")
     parser.add_argument("--target", "-t",  default=3, type=int, help="target(default 3)")
@@ -124,5 +125,5 @@ if __name__ == '__main__':
     session = tf.Session(config=config)
     K.set_session(session)
 
-    run(args.target, args.iter, args.batch_size, args.epochs, args.out)
+    run(args.target, args.start, args.iter, args.batch_size, args.epochs, args.out)
 
