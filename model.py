@@ -30,7 +30,7 @@ def mlp(x, layers):
     return x
 
 
-def xy_model(train_target, data):
+def xy_model(data):
     input_distance = Input(shape=(data[0].shape[1],))
     input_dist_diff = Input(shape=(data[1].shape[1],))
 
@@ -48,7 +48,7 @@ def xy_model(train_target, data):
     return model
 
 
-def mv_model(train_target, data):
+def mv_model(data):
     input_org = Input(shape=(data[0].shape[1],5,1))
     input_fft = Input(shape=(data[1].shape[1],5,1))
     input_psd = Input(shape=(data[2].shape[1],5,1))
@@ -84,7 +84,7 @@ def mv_model(train_target, data):
     fft_stat = mlp(input_fft_stat, layers=[50, 25])
     psd_stat = mlp(input_psd_stat, layers=[50, 25])
     spec_stat = mlp(input_spec_stat, layers=[50, 25])
-    fft_peak = mlp(input_fft_stat, layers=[25, 10])
+    fft_peak = mlp(input_fft_peak, layers=[25, 10])
     psd_peak = mlp(input_psd_peak, layers=[25, 10])
     spec_peak = mlp(input_spec_peak, layers=[25, 10])
     psd_diff = mlp(input_psd_diff, layers=[20, 10])
@@ -120,9 +120,9 @@ def mv_model(train_target, data):
 
 def set_model(train_target, data):
     if train_target == 0:
-        model = xy_model(train_target, data)
-    elif train_target > 0:
-        model = mv_model(train_target, data)
+        model = xy_model(data)
+    else:
+        model = mv_model(data)
     optimizer = keras.optimizers.Adam(decay=0.00001)
 
     if train_target == 0:

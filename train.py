@@ -29,7 +29,7 @@ from util import *
 LABEL = ['XY', 'M' , 'V', 'MV']
 
 
-def train(model, X,Y, epochs=200, batch_size=256, label=None, seq=0, out='./model'):
+def train(model, X, Y, epochs=200, batch_size=256, label=None, seq=0, out='./model'):
     MODEL_SAVE_FOLDER_PATH = out
     if not os.path.exists(MODEL_SAVE_FOLDER_PATH):
         os.mkdir(MODEL_SAVE_FOLDER_PATH)
