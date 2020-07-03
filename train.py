@@ -68,7 +68,7 @@ def run(target, iteration=10, batch_size=256, epochs=500, out='./model'):
     x_train, y_train, x_test = get_data()
     print(f'Kind of Data: {len(x_train)}')
     
-    m_pred_list, v_pred_list = [], []
+    x_pred_list, y_pred_list, m_pred_list, v_pred_list = [], [], [], []
     for i in range(iteration):
         model = set_model(target, x_train)
     
@@ -78,18 +78,34 @@ def run(target, iteration=10, batch_size=256, epochs=500, out='./model'):
                      label=LABEL[target],
                      seq=i,
                      out=out)
-        best_model = load_best_model(target, label=LABEL[target])
+        best_model = load_best_model(target, label=LABEL[target], seq=i)
         pred_data_test = best_model.predict(x_test)
-        m_pred_list.append(pred_data_test[:,2])
-        v_pred_list.append(pred_data_test[:,3])
-    m_pred = np.mean(m_pred_list, axis=0)
-    v_pred = np.mean(v_pred_list, axis=0)
+        if target == 0:
+            x_pred_list.append(pred_data_test[:,0])
+            y_pred_list.append(pred_data_test[:,1])
+        if target == 1 or target == 3:
+            m_pred_list.append(pred_data_test[:,2])
+        if target == 2 or target == 3:
+            v_pred_list.append(pred_data_test[:,3])
+
+    if target == 0:
+        x_pred = np.mean(x_pred_list, axis=0)
+        y_pred = np.mean(y_pred_list, axis=0)
+    if target == 1 or target == 3:
+        m_pred = np.mean(m_pred_list, axis=0)
+    if target == 2 or target == 3:
+        v_pred = np.mean(v_pred_list, axis=0)
     
     # submit
     submit = pd.read_csv('xy_mlp_ensemble10_2nd.csv')
-    submit.iloc[:3] = m_pred
-    submit.iloc[:4] = v_pred
-    submit.to_csv('mv_ensemble10.csv', index=None)
+    if target == 0:
+        submit.iloc[:1] = x_pred
+        submit.iloc[:2] = y_pred
+    if target == 1 or target == 3:
+        submit.iloc[:3] = m_pred
+    if target == 2 or target == 3:
+        submit.iloc[:4] = v_pred
+    submit.to_csv(os.path.join(out, 'mv_ensemble10.csv'), index=None)
 
 
 if __name__ == '__main__':

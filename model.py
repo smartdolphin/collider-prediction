@@ -18,7 +18,7 @@ import keras.backend as K
 from keras.models import load_model
 
 import pandas as pd
-from metrics import my_loss_E1, my_loss_E2, mae_m, mae_v
+from metrics import my_loss_E1, my_loss_E2, mae_x, mae_y, mae_m, mae_v
 
 
 def mlp(x, layers):
@@ -27,6 +27,70 @@ def mlp(x, layers):
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
     return x
+
+
+def xy_model(train_target, data):
+    input_org = Input(shape=(data[0].shape[1],5,1))
+
+    input_distance = Input(shape=(data[1].shape[1],))
+    input_dist_diff = Input(shape=(data[2].shape[1],))
+
+    # resnet
+    org = build_resnet(input_org, input_org.shape, n=5)
+
+    distance = mlp(input_distance, layers=[30, 15, 10])
+    dist_diff = mlp(input_dist_diff, layers=[60, 30, 10])
+
+    x = Concatenate()([org, distance, dist_diff])
+#     x = Dropout(0.2)(x)
+    x = Dense(128, activation ='elu')(x)
+    x = Dense(64, activation ='elu')(x)
+    x = Dense(32, activation = 'elu')(x)
+    x = Dense(16, activation ='elu')(x)
+    out = Dense(4, activation='linear')(x)
+    model = Model(inputs=[input_org, input_distance, input_dist_diff],
+                  outputs=out)
+    optimizer = keras.optimizers.Adam(decay=0.00001)
+
+    if train_target == 0:
+        mask = np.array([1,1,0,0])
+    elif train_target == 1:
+        mask = np.array([0,0,1,0])
+    elif train_target == 2:
+        mask = np.array([0,0,0,1])
+    else:
+        mask = np.array([0,0,1,1])
+
+    if train_target==0:
+        loss_func = functools.partial(my_loss_E1, mask=mask)
+        loss_func.__name__ = 'my_loss_E1'
+        model.compile(loss=loss_func,
+                      optimizer=optimizer,
+                      metrics=[mae_x, mae_y]
+                     )
+    elif train_target==1:
+        loss_func = functools.partial(my_loss_E2, mask=mask)
+        loss_func.__name__ = 'my_loss_E2'
+        model.compile(loss=loss_func,
+                  optimizer=optimizer,
+                  metrics=[mae_m]
+                 )
+    elif train_target==2:
+        loss_func = functools.partial(my_loss_E2, mask=mask)
+        loss_func.__name__ = 'my_loss_E2'
+        model.compile(loss=loss_func,
+                  optimizer=optimizer,
+                  metrics=[mae_v]
+                 )
+    else:
+        loss_func = functools.partial(my_loss_E2, mask=mask)
+        loss_func.__name__ = 'my_loss_E2'
+        model.compile(loss=loss_func,
+                  optimizer=optimizer,
+                  metrics=[mae_m, mae_v]
+                 )
+    model.summary()
+    return model
 
 
 def set_model(train_target, data):    
@@ -181,26 +245,28 @@ def build_resnet(input, input_shape=(375,5,1), n_feature_maps=8, n=5):
     return out
 
 
-def load_best_model(train_target, is_train=False, label=None):
-    print(f'Loading best_{label}.hdf5..')
+def load_best_model(train_target, is_train=False, label=None, seq=0, root='.'):
+    model_path = os.path.join(root, f'best_{label}_{seq}.hdf5')
+    print(f'Loading {model_path}..')
+
     if train_target == 0:
-        model = load_model(f'best_{label}.hdf5' , custom_objects={'my_loss_E1': my_loss_E1})
+        model = load_model(model_path, custom_objects={'my_loss_E1': my_loss_E1,
+                                                       'mae_x': mae_x, 'mae_y': mae_y})
     elif train_target == 1:
         mask = np.array([0,0,1,0])
         loss_func = functools.partial(my_loss_E2, mask=mask)
         loss_func.__name__ = 'my_loss_E2'
-        model = load_model(f'best_{label}.hdf5' , custom_objects={'my_loss_E2': loss_func,
-                                                                 'mae_m': mae_m})
+        model = load_model(model_path, custom_objects={'my_loss_E2': loss_func,
+                                                       'mae_m': mae_m})
     elif train_target == 2:
         mask = np.array([0,0,0,1])
         loss_func = functools.partial(my_loss_E2, mask=mask)
         loss_func.__name__ = 'my_loss_E2'
-        model = load_model(f'best_{label}.hdf5' , custom_objects={'my_loss_E2': loss_func,
-                                                                 'mae_v': mae_v})
+        model = load_model(model_path, custom_objects={'my_loss_E2': loss_func,
+                                                      'mae_v': mae_v})
     else:
-        model = load_model(f'best_{label}.hdf5' , custom_objects={'my_loss_E2': my_loss_E2,
-                                                                 'mae_m': mae_m, 'mae_v': mae_v})
-
+        model = load_model(model_path, custom_objects={'my_loss_E2': my_loss_E2,
+                                                       'mae_m': mae_m, 'mae_v': mae_v})
     return model
 
 

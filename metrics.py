@@ -10,6 +10,9 @@ weight2 = np.array([0,0,1,1])
 weightm = np.array([1,0])
 weightv = np.array([0,1])
 
+
+weight_x = np.array([1, 0, 0, 0])
+weight_y = np.array([0, 1, 0, 0])
 weight_m = np.array([0, 0, 1, 0])
 weight_v = np.array([0, 0, 0, 1])
 
@@ -38,11 +41,19 @@ def r2(y_true, y_pred):
     return (1 - SS_res/(SS_tot + K.epsilon()))
 
 
-def mae_m(y_true, y_pred): 
+def mae_x(y_true, y_pred):
+    return K.mean(K.abs(y_pred - y_true)*weight_x)
+
+
+def mae_y(y_true, y_pred):
+    return K.mean(K.abs(y_pred - y_true)*weight_y)
+
+
+def mae_m(y_true, y_pred):
     return K.mean(K.abs(y_pred - y_true)*weight_m)
 
 
-def mae_v(y_true, y_pred):    
+def mae_v(y_true, y_pred):
     return K.mean(K.abs(y_pred - y_true)*weight_v)
 
 
