@@ -31,25 +31,19 @@ def mlp(x, layers):
 
 
 def xy_model(train_target, data):
-    input_org = Input(shape=(data[0].shape[1],5,1))
-
-    input_distance = Input(shape=(data[1].shape[1],))
-    input_dist_diff = Input(shape=(data[2].shape[1],))
-
-    # resnet
-    org = build_resnet(input_org, input_org.shape, n=5)
+    input_distance = Input(shape=(data[0].shape[1],))
+    input_dist_diff = Input(shape=(data[1].shape[1],))
 
     distance = mlp(input_distance, layers=[30, 15, 10])
     dist_diff = mlp(input_dist_diff, layers=[60, 30, 10])
 
-    x = Concatenate()([org, distance, dist_diff])
+    x = Concatenate()([distance, dist_diff])
 #     x = Dropout(0.2)(x)
-    x = Dense(128, activation ='elu')(x)
-    x = Dense(64, activation ='elu')(x)
-    x = Dense(32, activation = 'elu')(x)
-    x = Dense(16, activation ='elu')(x)
+    x = Dense(64, activation ='relu')(x)
+    x = Dense(32, activation = 'relu')(x)
+    x = Dense(16, activation ='relu')(x)
     out = Dense(4, activation='linear')(x)
-    model = Model(inputs=[input_org, input_distance, input_dist_diff],
+    model = Model(inputs=[input_distance, input_dist_diff],
                   outputs=out)
     return model
 
