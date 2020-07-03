@@ -50,50 +50,10 @@ def xy_model(train_target, data):
     out = Dense(4, activation='linear')(x)
     model = Model(inputs=[input_org, input_distance, input_dist_diff],
                   outputs=out)
-    optimizer = keras.optimizers.Adam(decay=0.00001)
-
-    if train_target == 0:
-        mask = np.array([1,1,0,0])
-    elif train_target == 1:
-        mask = np.array([0,0,1,0])
-    elif train_target == 2:
-        mask = np.array([0,0,0,1])
-    else:
-        mask = np.array([0,0,1,1])
-
-    if train_target==0:
-        loss_func = functools.partial(my_loss_E1, mask=mask)
-        loss_func.__name__ = 'my_loss_E1'
-        model.compile(loss=loss_func,
-                      optimizer=optimizer,
-                      metrics=[mae_x, mae_y]
-                     )
-    elif train_target==1:
-        loss_func = functools.partial(my_loss_E2, mask=mask)
-        loss_func.__name__ = 'my_loss_E2'
-        model.compile(loss=loss_func,
-                  optimizer=optimizer,
-                  metrics=[mae_m]
-                 )
-    elif train_target==2:
-        loss_func = functools.partial(my_loss_E2, mask=mask)
-        loss_func.__name__ = 'my_loss_E2'
-        model.compile(loss=loss_func,
-                  optimizer=optimizer,
-                  metrics=[mae_v]
-                 )
-    else:
-        loss_func = functools.partial(my_loss_E2, mask=mask)
-        loss_func.__name__ = 'my_loss_E2'
-        model.compile(loss=loss_func,
-                  optimizer=optimizer,
-                  metrics=[mae_m, mae_v]
-                 )
-    model.summary()
     return model
 
 
-def set_model(train_target, data):    
+def mv_model(train_target, data):
     input_org = Input(shape=(data[0].shape[1],5,1))
     input_fft = Input(shape=(data[1].shape[1],5,1))
     input_psd = Input(shape=(data[2].shape[1],5,1))
@@ -160,6 +120,14 @@ def set_model(train_target, data):
                           #input_v
                          ], 
                   outputs=out)
+    return model
+
+
+def set_model(train_target, data):
+    if train_target == 0:
+        model = xy_model(train_target, data)
+    elif train_target > 0:
+        model = mv_model(train_target, data)
     optimizer = keras.optimizers.Adam(decay=0.00001)
 
     if train_target == 0:
@@ -176,6 +144,7 @@ def set_model(train_target, data):
         loss_func.__name__ = 'my_loss_E1'
         model.compile(loss=loss_func,
                       optimizer=optimizer,
+                      metrics=[mae_x, mae_y]
                      )
     elif train_target==1:
         loss_func = functools.partial(my_loss_E2, mask=mask)

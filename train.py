@@ -65,7 +65,7 @@ def train(model, X,Y, epochs=200, batch_size=256, label=None, seq=0, out='./mode
 
 
 def run(target, iteration=10, batch_size=256, epochs=500, out='./model'):
-    x_train, y_train, x_test = get_data()
+    x_train, y_train, x_test = get_data(target=target)
     print(f'Kind of Data: {len(x_train)}')
     
     x_pred_list, y_pred_list, m_pred_list, v_pred_list = [], [], [], []
