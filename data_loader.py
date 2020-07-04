@@ -2,11 +2,15 @@ import os
 import pickle as pkl
 
 
-def get_data(target=3):
+def get_data(target=3, name=None):
     if target == 0:
         root = 'xy'
     else:
         root = 'mv'
+
+    if 'inception' in name:
+        root += '_1d'
+
     with open(os.path.join(root, 'x_train.pkl'), 'rb') as f:
         x_train = pkl.load(f)
     with open(os.path.join(root, 'y_train.pkl'), 'rb') as f:

@@ -64,14 +64,14 @@ def train(model, X, Y, epochs=200, batch_size=256, label=None, seq=0, out='./mod
     return history 
 
 
-def run(target, start=0, iteration=10, batch_size=256, epochs=500, out='./model'):
-    x_train, y_train, x_test = get_data(target=target)
+def run(target, start=0, iteration=10, batch_size=256, epochs=500, out='./model', name=None):
+    x_train, y_train, x_test = get_data(target=target, name=name)
     print(f'Kind of Data: {len(x_train)}')
     
     x_pred_list, y_pred_list, m_pred_list, v_pred_list = [], [], [], []
     for i in range(iteration):
-        model = set_model(target, x_train)
-    
+        model = set_model(target, x_train, out=out, name=name)
+
         hist = train(model, x_train, y_train,
                      epochs=epochs,
                      batch_size=batch_size,
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", "-e",  default=500, type=int, help="epochs(default 500)")
     parser.add_argument("--target", "-t",  default=3, type=int, help="target(default 3)")
     parser.add_argument("--batch_size", "-b",  default=256, type=int, help="batch size(default 256)")
+    parser.add_argument("--name", "-n", default=None, type=str, help="model name")
     parser.add_argument("--out", "-o", default="./model", type=str, help="output dir")
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu)
@@ -125,5 +126,5 @@ if __name__ == '__main__':
     session = tf.Session(config=config)
     K.set_session(session)
 
-    run(args.target, args.start, args.iter, args.batch_size, args.epochs, args.out)
+    run(args.target, args.start, args.iter, args.batch_size, args.epochs, args.out, args.name)
 

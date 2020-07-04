@@ -20,6 +20,7 @@ from keras.models import load_model
 
 import pandas as pd
 from metrics import my_loss_E1, my_loss_E2, mae_x, mae_y, mae_m, mae_v
+import inception
 
 
 def mlp(x, layers):
@@ -38,7 +39,6 @@ def xy_model(data):
     dist_diff = mlp(input_dist_diff, layers=[60, 30, 10])
 
     x = Concatenate()([distance, dist_diff])
-#     x = Dropout(0.2)(x)
     x = Dense(64, activation ='relu')(x)
     x = Dense(32, activation = 'relu')(x)
     x = Dense(16, activation ='relu')(x)
@@ -66,60 +66,59 @@ def mv_model(data):
     input_psd_peak = Input(shape=(data[13].shape[1],))
     input_spec_peak = Input(shape=(data[14].shape[1],))
     input_psd_diff = Input(shape=(data[15].shape[1],))
-    input_spec_diff = Input(shape=(data[16].shape[1],))    
+    input_spec_diff = Input(shape=(data[16].shape[1],))
     input_add = Input(shape=(data[17].shape[1],))
-    #input_v = Input(shape=(v_df.shape[1],))
-    
+    input_v = Input(shape=(data[18].shape[1],))
+
     # resnet
     org = build_resnet(input_org, input_org.shape, n=5)
     fft = build_resnet(input_fft, input_fft.shape, n=4)
     psd = build_resnet(input_psd, input_psd.shape, n=4)
     ac = build_resnet(input_autocorr, input_autocorr.shape, n=5)
-    spec = build_resnet(input_spec, input_spec.shape, n=4)    
+    spec = build_resnet(input_spec, input_spec.shape, n=4)
 
     roll = mlp(input_rolling, layers=[100, 50, 25])
-    fftw = mlp(input_fftw, layers=[50, 25])
-    psdw = mlp(input_psdw, layers=[50, 25])
-    specw = mlp(input_specw, layers=[50, 25])
-    fft_stat = mlp(input_fft_stat, layers=[50, 25])
-    psd_stat = mlp(input_psd_stat, layers=[50, 25])
-    spec_stat = mlp(input_spec_stat, layers=[50, 25])
-    fft_peak = mlp(input_fft_peak, layers=[25, 10])
-    psd_peak = mlp(input_psd_peak, layers=[25, 10])
-    spec_peak = mlp(input_spec_peak, layers=[25, 10])
-    psd_diff = mlp(input_psd_diff, layers=[20, 10])
-    spec_diff = mlp(input_spec_diff, layers=[20, 10])
-    
+    fftw = mlp(input_fftw, layers=[100, 50, 25])
+    psdw = mlp(input_psdw, layers=[100, 50, 25])
+    specw = mlp(input_specw, layers=[100, 50, 25])
+    fft_stat = mlp(input_fft_stat, layers=[50, 25, 10])
+    psd_stat = mlp(input_psd_stat, layers=[20, 10, 5])
+    spec_stat = mlp(input_spec_stat, layers=[20, 10, 5])
+    fft_peak = mlp(input_fft_peak, layers=[40, 20, 10])
+    psd_peak = mlp(input_psd_peak, layers=[40, 20, 10])
+    spec_peak = mlp(input_spec_peak, layers=[40, 20, 10])
+    psd_diff = mlp(input_psd_diff, layers=[10, 5])
+    spec_diff = mlp(input_spec_diff, layers=[10, 5])
     add = mlp(input_add, layers=[10, 5])
-    #v = mlp(input_v, layers=[10, 5])
+    v = mlp(input_v, layers=[5])
 
     x = Concatenate()([org, fft, psd, ac, spec,
                        roll, fftw, psdw, specw,
                        fft_stat, psd_stat, spec_stat,
                        fft_peak, psd_peak, spec_peak,
-                       psd_diff, spec_diff, add, 
-                      # v
+                       psd_diff, spec_diff, add, v
                       ])
 
 #     x = Dropout(0.2)(x)
-    x = Dense(128, activation ='elu')(x)
-    x = Dense(64, activation ='elu')(x)
-    x = Dense(32, activation = 'elu')(x)
-    x = Dense(16, activation ='elu')(x)
+    x = Dense(128, activation ='relu')(x)
+    x = Dense(64, activation ='relu')(x)
+    x = Dense(32, activation = 'relu')(x)
+    x = Dense(16, activation ='relu')(x)
     out = Dense(4, activation='linear')(x)
     model = Model(inputs=[input_org, input_fft,  input_psd, input_autocorr, input_spec, 
                           input_rolling, input_fftw, input_psdw, input_specw,
                           input_fft_stat, input_psd_stat, input_spec_stat,
                           input_fft_peak, input_psd_peak, input_spec_peak,
-                          input_psd_diff, input_spec_diff, input_add, 
-                          #input_v
+                          input_psd_diff, input_spec_diff, input_add, input_v
                          ], 
                   outputs=out)
     return model
 
 
-def set_model(train_target, data):
-    if train_target == 0:
+def set_model(train_target, data, out='.', name=None):
+    if name == 'inception':
+        model = inception.INCEPTION(out, data, 4, verbose=True).get_model()
+    elif train_target == 0:
         model = xy_model(data)
     else:
         model = mv_model(data)
