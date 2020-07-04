@@ -21,6 +21,7 @@ from keras.models import load_model
 import pandas as pd
 from metrics import my_loss_E1, my_loss_E2, mae_x, mae_y, mae_m, mae_v
 import inception
+import inceptionv2
 
 
 def mlp(x, layers):
@@ -118,6 +119,8 @@ def mv_model(data):
 def set_model(train_target, data, out='.', name=None):
     if name == 'inception':
         model = inception.INCEPTION(out, data, 4, verbose=True).get_model()
+    elif name == 'inceptionv2':
+        model = inceptionv2.INCEPTION(out, data, 4, verbose=True).get_model()
     elif train_target == 0:
         model = xy_model(data)
     else:
