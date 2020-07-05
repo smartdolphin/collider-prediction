@@ -10,6 +10,8 @@ def get_data(target=3, name=None):
 
     if name is not None and 'inception' == name:
         root += '_1d'
+    if name is not None and 'mlp' in name:
+        root += '_mlp'
 
     with open(os.path.join(root, 'x_train.pkl'), 'rb') as f:
         x_train = pkl.load(f)

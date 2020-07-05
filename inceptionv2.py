@@ -69,12 +69,24 @@ class INCEPTION:
         x = keras.layers.Activation('relu')(x)
         return x
 
+    def mlp(self, x, layers):
+        for i in range(len(layers)):
+            x = keras.layers.Dense(layers[i])(x)
+            x = keras.layers.BatchNormalization()(x)
+            x = keras.layers.Activation('relu')(x)
+        return x
+
     def build_model(self, data_list, nb_classes):
 
         input_list, out_layers = [], []
         for data in data_list:
             input_layer = keras.layers.Input(shape=data.shape[1:])
             input_list.append(input_layer)
+
+            if len(data.shape) < 3:
+                mlp_out = self.mlp(input_layer, layers=[100, 50, 10])
+                out_layers.append(mlp_out)
+                continue
 
             x = input_layer
             input_res = input_layer

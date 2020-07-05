@@ -119,7 +119,7 @@ def mv_model(data):
 def set_model(train_target, data, out='.', name=None):
     if name == 'inception':
         model = inception.INCEPTION(out, data, 4, verbose=True).get_model()
-    elif name == 'inceptionv2':
+    elif name == 'inceptionv2' or 'inceptionv2' in name:
         model = inceptionv2.INCEPTION(out, data, 4, verbose=True).get_model()
     elif train_target == 0:
         model = xy_model(data)
