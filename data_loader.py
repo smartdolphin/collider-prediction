@@ -8,7 +8,7 @@ def get_data(target=3, name=None):
     else:
         root = 'mv'
 
-    if 'inception' in name:
+    if name is not None and 'inception' == name:
         root += '_1d'
 
     with open(os.path.join(root, 'x_train.pkl'), 'rb') as f:

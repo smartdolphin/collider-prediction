@@ -35,7 +35,7 @@ class INCEPTION:
     def _inception_module(self, input_tensor, stride=1, activation='linear'):
 
         if self.use_bottleneck and int(input_tensor.shape[-1]) > self.bottleneck_size:
-            input_inception = keras.layers.Conv1D(filters=self.bottleneck_size, kernel_size=1,
+            input_inception = keras.layers.Conv2D(filters=self.bottleneck_size, kernel_size=(1, 1),
                                                   padding='same', activation=activation, use_bias=False)(input_tensor)
         else:
             input_inception = input_tensor
@@ -44,29 +44,27 @@ class INCEPTION:
         kernel_size_s = [self.kernel_size // (2 ** i) for i in range(3)]
 
         conv_list = []
-
         for i in range(len(kernel_size_s)):
-            conv_list.append(keras.layers.Conv1D(filters=self.nb_filters, kernel_size=kernel_size_s[i],
+            conv_list.append(keras.layers.Conv2D(filters=self.nb_filters, kernel_size=(kernel_size_s[i], 1),
                                                  strides=stride, padding='same', activation=activation, use_bias=False)(
                 input_inception))
 
-        max_pool_1 = keras.layers.MaxPool1D(pool_size=3, strides=stride, padding='same')(input_tensor)
+        max_pool_1 = keras.layers.MaxPool2D(pool_size=(3,1), strides=stride, padding='same')(input_tensor)
 
-        conv_6 = keras.layers.Conv1D(filters=self.nb_filters, kernel_size=1,
+        conv_6 = keras.layers.Conv2D(filters=self.nb_filters, kernel_size=(1, 1),
                                      padding='same', activation=activation, use_bias=False)(max_pool_1)
 
         conv_list.append(conv_6)
 
-        x = keras.layers.Concatenate(axis=2)(conv_list)
+        x = keras.layers.Concatenate(axis=3)(conv_list)
         x = keras.layers.BatchNormalization()(x)
         x = keras.layers.Activation(activation='relu')(x)
         return x
 
     def _shortcut_layer(self, input_tensor, out_tensor):
-        shortcut_y = keras.layers.Conv1D(filters=int(out_tensor.shape[-1]), kernel_size=1,
+        shortcut_y = keras.layers.Conv2D(filters=int(out_tensor.shape[-1]), kernel_size=(1, 1),
                                          padding='same', use_bias=False)(input_tensor)
         shortcut_y = keras.layers.BatchNormalization()(shortcut_y)
-
         x = keras.layers.Add()([shortcut_y, out_tensor])
         x = keras.layers.Activation('relu')(x)
         return x
@@ -75,22 +73,21 @@ class INCEPTION:
 
         input_list, out_layers = [], []
         for data in data_list:
-            input_layer = keras.layers.Input(shape=(data.shape[1:]))
+            input_layer = keras.layers.Input(shape=data.shape[1:])
             input_list.append(input_layer)
 
             x = input_layer
             input_res = input_layer
 
             for d in range(self.depth):
-
                 x = self._inception_module(x)
 
                 if self.use_residual and d % 3 == 2:
                     x = self._shortcut_layer(input_res, x)
-                    x = keras.layers.MaxPool1D(pool_size=2)(x)
+                    x = keras.layers.MaxPool2D(pool_size=(2, 1))(x)
                     input_res = x
 
-            gap_layer = keras.layers.GlobalAveragePooling1D()(x)
+            gap_layer = keras.layers.GlobalAveragePooling2D()(x)
             out_layers.append(gap_layer)
 
         gap_layers = keras.layers.Concatenate()(out_layers)
@@ -106,4 +103,11 @@ class INCEPTION:
 
     def get_model(self):
         return self.model
+
+
+
+if __name__ == '__main__':
+    from data_loader import get_data
+    x_train, _, _ = get_data(3)
+    INCEPTION('.', x_train)
 
