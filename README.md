@@ -11,6 +11,11 @@
 ![acceleration sensor 3](./img/s3.png)<br/>
 ![acceleration sensor 4](./img/s4.png)<br/>
 
+## Method
+- Residual CNN for time-series (M)
+- Multi-layer perceptron (X, Y, V)
+- Permutation feature selection
+
 ## Feature engineering
 - Distance Feature using signal arrival time delta
 - Original Signal<br/>
@@ -27,8 +32,3 @@
 ![mel](./img/mel.png)<br/>
 - Statistical information
 - Peak distance mean/std
-
-#### Model & Method
-- Residual CNN for time-series
-- Multi-layer perceptron
-- Permutation feature selection
