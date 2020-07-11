@@ -12,7 +12,7 @@
 ![acceleration sensor 4](./img/s4.png)<br/>
 
 ## Feature engineering
-- Distance Feature
+- Distance Feature using signal arrival time delta
 - Original Signal<br/>
 ![fft](./img/signal.png)<br/>
 - Fast Fourier Transform (FFT)<br/>
