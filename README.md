@@ -14,6 +14,7 @@
 ## Method
 - Residual CNN for time-series (M)
 - Multi-layer perceptron (X, Y, V)
+- Model average ensemble
 - Permutation feature selection
 
 ## Feature engineering
