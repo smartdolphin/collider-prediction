@@ -2,7 +2,7 @@
 [Collider detection using acceleration sensor](https://dacon.io/competitions/official/235614/overview/) task was to predict collider 2D position(x, y), mass and velocity.<br/>
 
 ## Summary of approach
-- LB Score: **Ranked 15th (Public 0.0063, Private: 0.00662)**
+- LB Score: **Entered top 7% (Public 0.0063, Private: 0.00662)**
 
 ## Data
 - Data visualization<br/>
